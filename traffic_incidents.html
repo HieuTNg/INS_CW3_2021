@@ -1,15 +1,50 @@
 <!DOCTYPE html>
 
 <html>
+
 <head>
   <title>Traffic Incidents</title>
+  <meta charset="utf-8">
+
+  <script src="https://api.mqcdn.com/sdk/mapquest-js/v1.3.2/mapquest.js"></script>
+  <link type="text/css" rel="stylesheet" href="https://api.mqcdn.com/sdk/mapquest-js/v1.3.2/mapquest.css" />
+  <script language="javascript" type="text/javascript">
+    function openRequest() {
+      //document.write(document.getElementById('city').value);
+      var xhttp = new XMLHttpRequest();
+
+      xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          viewIncidentsAtLocation(this);
+        }
+      };
+
+      xhttp.open("GET", "http://www.mapquestapi.com/traffic/v2/incidents?key=cT9BWMjQnhfMWSEeqTOfQuXRI9PtC50a&boundingBox=39.95,-105.25,39.52,-104.71&filters=construction,incidents&outFormat=json", true);
+      xhttp.send();
+    }
+
+    function viewIncidentsAtLocation(xml) {
+      //document.write(xml.responseText);
+      document.getElementById("greeting").innerHTML = xml.responseText;
+    }
+  </script>
 </head>
 
 <body>
   <h1>Welcome to our site</h1>
-  <hr/>
+  <hr />
   <center>
-  <p>Greeting message</p>
-</center>
+    <p id="greeting">Greeting message</p>
+    <label for="chooseACity">Choose a city: </label>
+    <select id="city" name="chooseACity">
+      <option value="New York">New York</option>
+      <option value="Los Angeles">Los Angeles</option>
+      <option value="Chicago">Chicago</option>
+      <option value="Seattle">Seattle</option>
+      <option value="Louisville">Louisville</option>
+    </select>
+    <input type="button" onclick="openRequest()" value="View" />
+  </center>
 </body>
+
 </html>
