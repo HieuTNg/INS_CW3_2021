@@ -9,41 +9,95 @@
   <script src="https://api.mqcdn.com/sdk/mapquest-js/v1.3.2/mapquest.js"></script>
   <link type="text/css" rel="stylesheet" href="https://api.mqcdn.com/sdk/mapquest-js/v1.3.2/mapquest.css" />
   <script language="javascript" type="text/javascript">
-    function openRequest() {
-      //document.write(document.getElementById('city').value);
+    function viewIncidentsAtLocation() {
+      let selectedCity = document.getElementById("city").value;
+
+      let lat = 0;
+      let lon = 0;
+
+      switch (selectedCity) {
+        case "new_york":
+          lat = 40.71;
+          lon = -74.00;
+          break;
+        case "los_angeles":
+          lat = 34.03;
+          lon = -118.15;
+          break;
+        case "chicago":
+          lat = 41.53;
+          lon = -87.38;
+          break;
+        case "seattle":
+          lat = 47.37;
+          lon = -122.20;
+          break;
+        case "louisville":
+          lat = 38.15;
+          lon = -85.46;
+          break;
+      }
+
+      let lat1 = lat - 0.22;
+      let lon1 = lon - 0.22;
+      let lat2 = lat + 0.22;
+      let lon2 = lon + 0.22;
+
+      let url = "http://www.mapquestapi.com/traffic/v2/incidents?key=cT9BWMjQnhfMWSEeqTOfQuXRI9PtC50a&boundingBox=" + lat1 + "," + lon1 + "," + lat2 + "," + lon2 + "&filters=construction,incidents&outFormat=json";
+
       var xhttp = new XMLHttpRequest();
 
       xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-          viewIncidentsAtLocation(this);
+          updateDocument(this);
         }
       };
 
-      xhttp.open("GET", "http://www.mapquestapi.com/traffic/v2/incidents?key=cT9BWMjQnhfMWSEeqTOfQuXRI9PtC50a&boundingBox=39.95,-105.25,39.52,-104.71&filters=construction,incidents&outFormat=json", true);
+      xhttp.open("GET", url, true);
       xhttp.send();
     }
 
-    function viewIncidentsAtLocation(xml) {
-      //document.write(xml.responseText);
-      document.getElementById("greeting").innerHTML = xml.responseText;
+    function updateDocument(xml) {
+      let incidentData = JSON.parse(xml.responseText).incidents;
+      let counter = 1;
+
+      let table = "<tr><td>" + counter + "</td><td>" + incidentData[0].shortDesc + "<td></tr>"
+      incidentData[0].shortDesc + "</td></tr>";
+
+      for (let i = 1; i < incidentData.length; i++) {
+        table += "<tr><td>" + counter++ + "</td><td>" + incidentData[i].shortDesc + "</td></tr>";
+      }
+
+      document.getElementById("incidents_table").innerHTML = table;
     }
   </script>
+
+  <style>
+    table,
+    th,
+    td {
+      border: 1px solid black;
+      border-collapse: collapse;
+    }
+  </style>
 </head>
 
 <body>
-  <h1>Welcome to our site</h1>
-  <hr />
   <center>
-    <p id="greeting">Greeting message</p>
+    <h1>Welcome to our site</h1>
+    <hr />
+    <p id="greeting">Please choose a city from the list below to view traffic incidents report of the city</p>
     <label for="chooseACity">Choose a city: </label>
     <select id="city" name="chooseACity">
-      <option value="New York">New York</option>
-      <option value="Los Angeles">Los Angeles</option>
-      <option value="Chicago">Chicago</option>
-      <option value="Seattle">Seattle</option>
-      <option value="Louisville">Louisville</option>
+      <option value="new_york">New York</option>
+      <option value="los_angeles">Los Angeles</option>
+      <option value="chicago">Chicago</option>
+      <option value="seattle">Seattle</option>
+      <option value="louisville">Louisville</option>
     </select>
-    <input type="button" onclick="openRequest()" value="View" />
+    <input type="button" onclick="viewIncidentsAtLocation()" value="View" />
+    <hr />
+    <table id="incidents_table"></table>
   </center>
 </body>
 
