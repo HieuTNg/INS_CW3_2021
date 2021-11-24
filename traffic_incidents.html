@@ -3,17 +3,21 @@
 <html>
 
 <head>
-  <title>Traffic Incidents</title>
+  <title>Traffic Incidents Report</title>
   <meta charset="utf-8">
 
   <script src="https://api.mqcdn.com/sdk/mapquest-js/v1.3.2/mapquest.js"></script>
   <link type="text/css" rel="stylesheet" href="https://api.mqcdn.com/sdk/mapquest-js/v1.3.2/mapquest.css" />
-  <script language="javascript" type="text/javascript">
-    function viewIncidentsAtLocation() {
-      let selectedCity = document.getElementById("city").value;
 
-      let lat = 0;
-      let lon = 0;
+  <script language="javascript" type="text/javascript">
+    let map;
+
+    //Request traffic data from the server according to user selected city
+    function viewIncidentsAtLocation() {
+      let selectedCity = document.getElementById("city").value; //Get user selected city
+
+      let lat = 0; //Latitude
+      let lon = 0; //Longitude
 
       switch (selectedCity) {
         case "new_york":
@@ -49,7 +53,28 @@
 
       xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-          updateDocument(this);
+          let incidentData = JSON.parse(this.responseText).incidents;
+
+          updateDocument(incidentData);
+
+          L.mapquest.key = 'cT9BWMjQnhfMWSEeqTOfQuXRI9PtC50a';
+
+          if (typeof map == "undefined") { // Initialize map if map is still undefine
+            map = L.mapquest.map('map', {
+              center: [lat, lon],
+              layers: L.mapquest.tileLayer('map'),
+              zoom: 12
+            });
+          } else { // Update map location if map has been initialized
+            map.setView([lat, lon], 12);
+          }
+
+          // Mark each incident on the map
+          for (let i = 0; i < incidentData.length; i++) {
+            L.circle([incidentData[i].lat, incidentData[i].lng], {
+              radius: 2
+            }).addTo(map);
+          }
         }
       };
 
@@ -57,8 +82,9 @@
       xhttp.send();
     }
 
-    function updateDocument(xml) {
-      let incidentData = JSON.parse(xml.responseText).incidents;
+    //Update the document to display the incidents data received
+    //data is listed in a table with a short description
+    function updateDocument(incidentData) {
       let counter = 1;
 
       let table = "<tr><td>" + counter + "</td><td>" + incidentData[0].shortDesc + "<td></tr>"
@@ -73,20 +99,24 @@
   </script>
 
   <style>
-    table,
-    th,
-    td {
-      border: 1px solid black;
+    table {
+      border-top: 1px solid black;
       border-collapse: collapse;
+    }
+
+    td {
+      border-left: 1px solid black;
+      border-right: 1px solid black;
+      border-bottom: 1px solid black;
     }
   </style>
 </head>
 
 <body>
   <center>
-    <h1>Welcome to our site</h1>
+    <h1>Welcome to Traffic Incidents Report</h1>
     <hr />
-    <p id="greeting">Please choose a city from the list below to view traffic incidents report of the city</p>
+    <p id="greeting">Please choose a city from the list below to view traffic incidents report of the selected city</p>
     <label for="chooseACity">Choose a city: </label>
     <select id="city" name="chooseACity">
       <option value="new_york">New York</option>
@@ -97,8 +127,14 @@
     </select>
     <input type="button" onclick="viewIncidentsAtLocation()" value="View" />
     <hr />
+    <div id="map" style="width: 80%; height: 530px;"></div>
+    <br />
     <table id="incidents_table"></table>
   </center>
 </body>
 
 </html>
+
+<!-- Reference -->
+<!-- All code written is based on the recommended training video unless stated below.
+     From line 60 - 69, the code is based on the code provided on W3schools.com at https://www.w3schools.com/js/js_ajax_xmlfile.asp -->
